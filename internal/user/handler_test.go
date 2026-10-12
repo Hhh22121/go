@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"go-backend-template/internal/httpx"
-	"go-backend-template/internal/httpx/httpxtest"
-	"go-backend-template/internal/user"
-	"go-backend-template/internal/user/usertest"
+	"github.com/Hhh22121/go/internal/httpx"
+	"github.com/Hhh22121/go/internal/httpx/httpxtest"
+	"github.com/Hhh22121/go/internal/user"
+	"github.com/Hhh22121/go/internal/user/usertest"
 )
 
 func newRouter(svc *user.Service, mw gin.HandlerFunc) *gin.Engine {

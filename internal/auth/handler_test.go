@@ -9,10 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go-backend-template/internal/auth"
-	"go-backend-template/internal/httpx/httpxtest"
-	"go-backend-template/internal/user"
-	"go-backend-template/internal/user/usertest"
+	"github.com/Hhh22121/go/internal/auth"
+	"github.com/Hhh22121/go/internal/httpx/httpxtest"
+	"github.com/Hhh22121/go/internal/user"
+	"github.com/Hhh22121/go/internal/user/usertest"
 )
 
 type env struct {

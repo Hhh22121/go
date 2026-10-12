@@ -9,8 +9,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
-	"go-backend-template/internal/apperr"
-	"go-backend-template/internal/store"
+	"github.com/Hhh22121/go/internal/apperr"
+	"github.com/Hhh22121/go/internal/store"
 )
 
 // Repository persists users. Implementations return apperr.ErrNotFound and

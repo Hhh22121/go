@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go-backend-template/internal/apperr"
-	"go-backend-template/internal/httpx"
+	"github.com/Hhh22121/go/internal/apperr"
+	"github.com/Hhh22121/go/internal/httpx"
 )
 
 // RequireAuth rejects requests without a valid bearer token and stores the

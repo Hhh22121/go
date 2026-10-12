@@ -11,7 +11,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 
-	"go-backend-template/internal/database"
+	"github.com/Hhh22121/go/internal/database"
 )
 
 // NewPostgres starts a throwaway Postgres container, runs migrations and

@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"go-backend-template/internal/httpx"
+	"github.com/Hhh22121/go/internal/httpx"
 )
 
 const requestIDHeader = "X-Request-ID"

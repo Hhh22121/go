@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go-backend-template/internal/apperr"
-	"go-backend-template/internal/httpx"
-	"go-backend-template/internal/user"
+	"github.com/Hhh22121/go/internal/apperr"
+	"github.com/Hhh22121/go/internal/httpx"
+	"github.com/Hhh22121/go/internal/user"
 )
 
 var errInvalidCredentials = fmt.Errorf("%w: invalid credentials", apperr.ErrUnauthorized)

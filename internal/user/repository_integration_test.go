@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"go-backend-template/internal/apperr"
-	"go-backend-template/internal/testutil"
-	"go-backend-template/internal/user"
+	"github.com/Hhh22121/go/internal/apperr"
+	"github.com/Hhh22121/go/internal/testutil"
+	"github.com/Hhh22121/go/internal/user"
 )
 
 func TestPostgresRepository(t *testing.T) {

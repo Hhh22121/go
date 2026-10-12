@@ -14,9 +14,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go-backend-template/internal/httpx"
-	"go-backend-template/internal/httpx/httpxtest"
-	"go-backend-template/internal/server"
+	"github.com/Hhh22121/go/internal/httpx"
+	"github.com/Hhh22121/go/internal/httpx/httpxtest"
+	"github.com/Hhh22121/go/internal/server"
 )
 
 type pinger struct{ err error }

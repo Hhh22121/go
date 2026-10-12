@@ -1,4 +1,4 @@
-module go-backend-template
+module github.com/Hhh22121/go
 
 go 1.27.2
 

@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	"go-backend-template/internal/apperr"
+	"github.com/Hhh22121/go/internal/apperr"
 )
 
 var secret = strings.Repeat("k", 32)

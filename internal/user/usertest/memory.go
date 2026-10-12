@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"go-backend-template/internal/apperr"
-	"go-backend-template/internal/user"
+	"github.com/Hhh22121/go/internal/apperr"
+	"github.com/Hhh22121/go/internal/user"
 )
 
 type MemoryRepository struct {
