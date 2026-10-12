@@ -1,5 +1,7 @@
 # go-backend-template
 
+[![CI](https://github.com/Hhh22121/go/actions/workflows/ci.yml/badge.svg)](https://github.com/Hhh22121/go/actions/workflows/ci.yml)
+
 Reusable Go REST backend: Gin, Postgres (pgx + sqlc + goose), JWT auth, slog, Docker.
 
 ## Quick start
