@@ -14,8 +14,8 @@ import (
 // caller's ID via httpx.SetUserID.
 func RequireAuth(tokens *TokenService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		raw, ok := strings.CutPrefix(c.GetHeader("Authorization"), "Bearer ")
-		if !ok || raw == "" {
+		scheme, raw, ok := strings.Cut(c.GetHeader("Authorization"), " ")
+		if !ok || !strings.EqualFold(scheme, "Bearer") || raw == "" {
 			httpx.WriteError(c, fmt.Errorf("%w: missing bearer token", apperr.ErrUnauthorized))
 			return
 		}

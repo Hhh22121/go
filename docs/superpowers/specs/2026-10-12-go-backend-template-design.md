@@ -79,8 +79,10 @@ middleware not installed). `Load()`
 returns an error listing all missing/invalid vars.
 
 ### server
-Middleware order: recover → request-id (`X-Request-ID`, generated if absent)
-→ slog access log (method, path, status, latency, request_id) → CORS.
+Middleware order: request-id (`X-Request-ID`, generated if absent)
+→ slog access log (method, path, status, latency, request_id) → recover
+(logs stack trace, responds 500) → body limit (1 MiB) → CORS. Recovery sits
+inside the access log so panicked requests are still logged.
 `Run(ctx)` starts `http.Server` and on context cancel (SIGINT/SIGTERM) calls
 `Shutdown` with `ShutdownTimeout`.
 

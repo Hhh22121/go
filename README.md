@@ -10,6 +10,8 @@ make docker-up     # Postgres on :5432
 make run           # API on :8080, migrations run on startup
 ```
 
+Generate a real JWT secret with `openssl rand -base64 48`. To run the whole stack (API + Postgres) in containers: `docker compose --profile api up --build`.
+
 ```bash
 curl -X POST localhost:8080/api/v1/auth/register -H 'Content-Type: application/json' \
   -d '{"email":"me@example.com","password":"password123"}'
@@ -33,6 +35,14 @@ Errors: `{"error":{"code":"not_found|conflict|unauthorized|validation_error|inte
 ## Config (env)
 
 `APP_ENV` (dev|prod), `HTTP_ADDR`, `DATABASE_URL`*, `JWT_SECRET`* (≥32 bytes), `JWT_TTL`, `SHUTDOWN_TIMEOUT`, `CORS_ORIGINS` (comma list, empty = CORS off). * required.
+
+## Operational notes
+
+- Migrations run on API startup under a Postgres advisory lock, so concurrent replicas are safe. In prod you may prefer running them separately (`make migrate-up`).
+- The `citext` extension is created by a migration; the database user needs `CREATE EXTENSION` privilege (or create it ahead of time as a superuser).
+- 4xx error messages are returned to clients verbatim. Do not wrap sensitive context into `apperr` errors.
+- The `tool` directives for sqlc/goose in `go.mod` add many indirect dependencies; that is expected.
+- Request bodies are capped at 1 MiB (413 `payload_too_large`); `JWT_SECRET` values starting with `change-me` are rejected when `APP_ENV=prod`.
 
 ## Layout
 

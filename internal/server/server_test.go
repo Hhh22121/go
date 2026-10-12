@@ -1,17 +1,20 @@
 package server_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/Hhh22121/go-backend-template/internal/httpx"
 	"github.com/Hhh22121/go-backend-template/internal/httpx/httpxtest"
 	"github.com/Hhh22121/go-backend-template/internal/server"
 )
@@ -66,6 +69,45 @@ func TestPanicRecovered(t *testing.T) {
 	}
 	if code := httpxtest.DecodeJSON[httpxtest.ErrorBody](t, rec).Error.Code; code != "internal_error" {
 		t.Fatalf("code = %q", code)
+	}
+}
+
+func TestBodyLimit(t *testing.T) {
+	e := newEngine(pinger{})
+	e.POST("/echo", func(c *gin.Context) {
+		var in struct {
+			Name string `json:"name"`
+		}
+		if !httpx.BindJSON(c, &in) {
+			return
+		}
+		c.JSON(http.StatusOK, in)
+	})
+	small := httpxtest.Do(t, e, http.MethodPost, "/echo", `{"name":"a"}`, "")
+	if small.Code != http.StatusOK {
+		t.Fatalf("small body status = %d", small.Code)
+	}
+	big := `{"name":"` + strings.Repeat("a", 2<<20) + `"}`
+	rec := httpxtest.Do(t, e, http.MethodPost, "/echo", big, "")
+	if rec.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status = %d, want 413", rec.Code)
+	}
+	if code := httpxtest.DecodeJSON[httpxtest.ErrorBody](t, rec).Error.Code; code != "payload_too_large" {
+		t.Fatalf("code = %q", code)
+	}
+}
+
+func TestPanicStillAccessLogged(t *testing.T) {
+	var buf bytes.Buffer
+	e := server.NewEngine(server.Options{
+		Logger: slog.New(slog.NewTextHandler(&buf, nil)),
+		DB:     pinger{},
+	})
+	e.GET("/boom", func(*gin.Context) { panic("boom") })
+	httpxtest.Do(t, e, http.MethodGet, "/boom", "", "")
+	out := buf.String()
+	if !strings.Contains(out, "http request") || !strings.Contains(out, "status=500") {
+		t.Fatalf("access log missing for panic: %s", out)
 	}
 }
 

@@ -4,6 +4,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -42,6 +43,15 @@ func load(getenv func(string) string) (Config, error) {
 	if len(cfg.JWTSecret) < 32 {
 		errs = append(errs, errors.New("JWT_SECRET must be at least 32 bytes"))
 	}
+	if cfg.Env == "prod" && strings.HasPrefix(cfg.JWTSecret, "change-me") {
+		errs = append(errs, errors.New("JWT_SECRET must be changed from the example value in prod"))
+	}
+	for _, o := range cfg.CORSOrigins {
+		if u, perr := url.Parse(o); perr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+			errs = append(errs, fmt.Errorf("CORS_ORIGINS entry %q must be an http(s) origin like https://app.example.com", o))
+		}
+	}
+
 	var err error
 	if cfg.JWTTTL, err = duration(getenv, "JWT_TTL", 15*time.Minute); err != nil {
 		errs = append(errs, err)

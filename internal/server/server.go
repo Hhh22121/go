@@ -28,7 +28,11 @@ type Options struct {
 // mount module routes on it (e.g. engine.Group("/api/v1")).
 func NewEngine(opts Options) *gin.Engine {
 	r := gin.New()
-	r.Use(recovery(), requestID(), accessLog(opts.Logger))
+	// Trust no proxy headers by default; ClientIP is the direct peer.
+	if err := r.SetTrustedProxies(nil); err != nil {
+		panic(fmt.Sprintf("set trusted proxies: %v", err)) // nil never errors
+	}
+	r.Use(requestID(), accessLog(opts.Logger), recovery(opts.Logger), bodyLimit(maxBodyBytes))
 	if len(opts.CORSOrigins) > 0 {
 		r.Use(cors.New(cors.Config{
 			AllowOrigins:  opts.CORSOrigins,
@@ -60,7 +64,14 @@ func readyz(db Pinger) gin.HandlerFunc {
 // Run serves h on addr until ctx is cancelled, then shuts down gracefully,
 // waiting at most shutdownTimeout for in-flight requests.
 func Run(ctx context.Context, addr string, h http.Handler, shutdownTimeout time.Duration) error {
-	srv := &http.Server{Addr: addr, Handler: h, ReadHeaderTimeout: 10 * time.Second}
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           h,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.ListenAndServe() }()

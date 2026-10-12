@@ -70,3 +70,31 @@ func TestLoadReportsAllErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestLoadRejectsPlaceholderSecretInProd(t *testing.T) {
+	base := map[string]string{
+		"DATABASE_URL": "postgres://x",
+		"JWT_SECRET":   "change-me-" + strings.Repeat("x", 30),
+	}
+	if _, err := load(env(base)); err != nil {
+		t.Fatalf("dev should accept placeholder: %v", err)
+	}
+	base["APP_ENV"] = "prod"
+	_, err := load(env(base))
+	if err == nil || !strings.Contains(err.Error(), "JWT_SECRET must be changed") {
+		t.Fatalf("err = %v, want placeholder error", err)
+	}
+}
+
+func TestLoadValidatesCORSOrigins(t *testing.T) {
+	for _, origin := range []string{"app.local", "ftp://a.com", "http://", "*"} {
+		_, err := load(env(map[string]string{
+			"DATABASE_URL": "postgres://x",
+			"JWT_SECRET":   validSecret,
+			"CORS_ORIGINS": origin,
+		}))
+		if err == nil || !strings.Contains(err.Error(), "CORS_ORIGINS") {
+			t.Errorf("origin %q: err = %v, want CORS_ORIGINS error", origin, err)
+		}
+	}
+}

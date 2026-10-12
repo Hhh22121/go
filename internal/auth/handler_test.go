@@ -2,6 +2,7 @@ package auth_test
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -119,6 +120,16 @@ func TestLoginAndMe(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("lowercase scheme", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/users/me", nil)
+		req.Header.Set("Authorization", "bearer "+lr.AccessToken)
+		rec := httptest.NewRecorder()
+		e.router.ServeHTTP(rec, req)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("status = %d", rec.Code)
+		}
+	})
 
 	t.Run("deleted user", func(t *testing.T) {
 		id, err := e.tokens.Verify(lr.AccessToken)

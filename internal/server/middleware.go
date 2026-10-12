@@ -2,7 +2,10 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
+	"net/http"
+	"runtime/debug"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,10 +16,29 @@ import (
 
 const requestIDHeader = "X-Request-ID"
 
-func recovery() gin.HandlerFunc {
-	return gin.CustomRecoveryWithWriter(nil, func(c *gin.Context, rec any) {
-		httpx.WriteError(c, fmt.Errorf("panic: %v", rec))
+// maxBodyBytes caps request bodies (1 MiB).
+const maxBodyBytes = 1 << 20
+
+// recovery logs panics with a stack trace and responds with the generic
+// internal-error envelope.
+func recovery(log *slog.Logger) gin.HandlerFunc {
+	return gin.CustomRecoveryWithWriter(io.Discard, func(c *gin.Context, rec any) {
+		log.ErrorContext(c.Request.Context(), "panic recovered",
+			"panic", fmt.Sprint(rec),
+			"stack", string(debug.Stack()),
+			"request_id", c.GetString(httpx.RequestIDKey))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": gin.H{
+			"code": "internal_error", "message": "internal server error",
+		}})
 	})
+}
+
+// bodyLimit makes reads past limit bytes fail with *http.MaxBytesError.
+func bodyLimit(limit int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limit)
+		c.Next()
+	}
 }
 
 // requestID reuses an incoming X-Request-ID (if sane) or generates one.
