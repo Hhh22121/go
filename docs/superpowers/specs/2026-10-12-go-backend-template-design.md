@@ -20,11 +20,12 @@ one example module (`user`) that shows the pattern for adding new modules.
 | Migrations     | goose (SQL files, embedded, run on startup)        |
 | Config         | Environment variables → typed struct               |
 | Logging        | `log/slog` (JSON in prod, text in dev)             |
-| Auth           | JWT (HS256, access token only) + bcrypt            |
+| Auth           | JWT `golang-jwt/jwt/v5` (HS256, access only) + bcrypt |
 | Validation     | Gin binding (`go-playground/validator`)            |
 | Tests          | `testing` + `httptest`; `testcontainers-go` for DB |
 | Lint           | golangci-lint                                      |
 | Dev env        | Docker Compose (Postgres), Makefile                |
+| Tool pinning   | sqlc, goose, golangci-lint via `tool` directives in go.mod |
 
 Module path: `github.com/Hhh22121/go-backend-template`.
 
@@ -36,11 +37,12 @@ internal/
   config/              # Load() reads env, validates required vars, returns Config
   server/              # Gin engine, middleware, route registration, graceful shutdown
   database/            # pgxpool constructor, goose migrate-up using embedded migrations
-  db/                  # sqlc-generated code (do not edit)
-  httpx/               # error → HTTP mapping, JSON error envelope, bind helper
+  store/               # sqlc-generated code (do not edit)
+  apperr/              # shared sentinel errors (no HTTP dependency)
+  httpx/               # apperr → HTTP mapping, JSON error envelope, user-ID context helpers
   auth/                # token service, password hashing, RequireAuth middleware, handlers
   user/                # example module: repo → service → handler
-migrations/            # goose SQL migrations (embedded via embed.FS)
+migrations/            # goose SQL migrations + embed.go (`package migrations; var FS embed.FS`)
 queries/               # sqlc query files
 sqlc.yaml  docker-compose.yml  Dockerfile  Makefile
 .golangci.yml  .env.example  README.md
@@ -51,12 +53,29 @@ Each module owns `handler.go`, `service.go`, `repository.go` and exposes a
 repository **interface** declared in the same package so they can be unit
 tested with fakes.
 
+### Package dependencies (no cycles)
+
+```
+apperr  ←  httpx  ←  user  ←  auth
+                      ↑         ↑
+store ────────────────┘         │
+cmd/api ── wires everything ────┘
+```
+
+- `user` must **not** import `auth`. `user.RegisterRoutes(rg, svc,
+  requireAuth gin.HandlerFunc)` receives the middleware from `main`, and reads
+  the caller with `httpx.UserID(c)`.
+- `auth` imports `user` (uses `user.Service` for create/lookup) and sets the
+  ID via `httpx.SetUserID(c, id)` in `RequireAuth`.
+- IDs are `github.com/google/uuid.UUID` everywhere (sqlc override).
+
 ## Components
 
 ### config
 Fields: `Env` (dev|prod), `HTTPAddr` (default `:8080`), `DatabaseURL`
 (required), `JWTSecret` (required, ≥32 bytes), `JWTTTL` (default `15m`),
-`ShutdownTimeout` (default `10s`), `CORSOrigins` (comma list). `Load()`
+`ShutdownTimeout` (default `10s`), `CORSOrigins` (comma list; empty → CORS
+middleware not installed). `Load()`
 returns an error listing all missing/invalid vars.
 
 ### server
@@ -73,17 +92,37 @@ Routes:
 - `GET /api/v1/users/me` (auth) → 200 `{user}`
 
 ### database
-`NewPool(ctx, url)` with ping; `Migrate(ctx, pool)` runs goose up from
-embedded `migrations/`. Initial migration: `users(id uuid pk default
-gen_random_uuid(), email citext unique not null, password_hash text not null,
-created_at timestamptz, updated_at timestamptz)`.
+`NewPool(ctx, url)` with ping; `Migrate(ctx, pool)` opens a `*sql.DB` via
+`stdlib.OpenDBFromPool(pool)`, sets `goose.SetBaseFS(migrations.FS)` +
+`SetDialect("postgres")` and runs up. Initial migration:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS citext;
+CREATE TABLE users (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         citext UNIQUE NOT NULL,
+  password_hash text NOT NULL,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  updated_at    timestamptz NOT NULL DEFAULT now()
+);
+```
+
+`updated_at` is set explicitly by any UPDATE query (no trigger).
+
+`sqlc.yaml`: engine postgresql, `schema: migrations`, `queries: queries`,
+out `internal/store`, `sql_package: pgx/v5`, override `uuid` →
+`github.com/google/uuid.UUID`, `citext` → `string`. Makefile goose targets use
+`-dir migrations`.
 
 ### auth
 - `PasswordHasher`: bcrypt hash/compare.
 - `TokenService`: `Issue(userID) (token, expiresAt)`, `Verify(token) (userID)`;
-  claims `sub`, `iat`, `exp`.
-- `RequireAuth(tokens)` middleware: parses `Authorization: Bearer`, puts
-  user ID in Gin context; helper `UserID(c)`.
+  claims `sub`, `iat`, `exp`. `Verify` accepts only HS256
+  (`jwt.WithValidMethods`), rejects expired tokens and missing/invalid `sub`.
+- `RequireAuth(tokens)` middleware: parses `Authorization: Bearer`, calls
+  `httpx.SetUserID`; failures → 401 envelope.
+- Register validation: `email` `binding:"required,email"`, `password`
+  `binding:"required,min=8,max=72"` (bcrypt 72-byte limit).
 - Handlers call `user.Service` for create/lookup. Login returns the same
   `ErrUnauthorized` for unknown email and wrong password.
 
@@ -93,10 +132,12 @@ Repository wraps sqlc queries and maps `pgx.ErrNoRows` → `ErrNotFound`,
 unique violation (23505) → `ErrConflict`. The `password_hash` is never
 serialized.
 
-### httpx
-Sentinel errors: `ErrNotFound`, `ErrConflict`, `ErrUnauthorized`,
-`ErrValidation`. `WriteError(c, err)` maps them to 404/409/401/400, anything
-else → 500 (logged, generic message). Envelope:
+### apperr / httpx
+`apperr` defines sentinels `ErrNotFound`, `ErrConflict`, `ErrUnauthorized`,
+`ErrValidation` (domain packages import only this). `httpx.WriteError(c, err)`
+maps them to 404/409/401/400, Gin bind errors → 400, anything else → 500
+(logged, generic message). `httpx.SetUserID` / `httpx.UserID` store the
+authenticated `uuid.UUID` in the Gin context. Envelope:
 `{"error":{"code":"not_found","message":"..."}}`.
 
 ## Error handling
@@ -119,8 +160,8 @@ details.
 
 Makefile targets: `run`, `build`, `test`, `test-integration`, `lint`, `sqlc`,
 `migrate-up`, `migrate-down`, `migrate-new name=...`, `docker-up`,
-`docker-down`. Dockerfile: multi-stage build → `gcr.io/distroless/static`
-non-root. Compose: `postgres:17` with healthcheck + optional `api` service.
+`docker-down`. Dockerfile: multi-stage, `CGO_ENABLED=0` →
+`gcr.io/distroless/static:nonroot`. Compose: `postgres:17` with healthcheck + optional `api` service.
 
 ## Out of scope (YAGNI)
 
