@@ -31,7 +31,7 @@ func newEnv() env {
 	return env{router: r, repo: repo, tokens: tokens}
 }
 
-const creds = `{"email":"a@example.com","password":"password123"}`
+const creds = `{"email":"a@example.com","password":"password123"}` //nolint:gosec // test fixture, not a credential
 
 type loginResp struct {
 	AccessToken string `json:"access_token"`
@@ -69,7 +69,7 @@ func TestRegister(t *testing.T) {
 		t.Fatalf("duplicate status = %d", dup.Code)
 	}
 
-	for name, bad := range map[string]string{
+	for name, bad := range map[string]string{ //nolint:gosec // test fixtures, not credentials
 		"bad email":      `{"email":"nope","password":"password123"}`,
 		"short password": `{"email":"b@example.com","password":"short"}`,
 		"missing fields": `{}`,
