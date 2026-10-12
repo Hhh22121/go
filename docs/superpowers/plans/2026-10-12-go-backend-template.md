@@ -14,7 +14,7 @@
 - Repo root: `/Users/hoangvx/Go/go-backend-template` (its own git repo, branch `main`). Never commit to the parent `~` repo.
 - Every commit message ends with a blank line then `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - Run unit tests with `GIN_MODE=test go test ./...` (quiets Gin debug output).
-- Deviations from spec (intentional): goose `NewProvider` instead of global `SetBaseFS`; `TokenService.Issue` returns `(string, error)` and `TTL()` supplies `expires_in`; password helpers are plain functions.
+- Deviations from spec (intentional): goose `NewProvider` instead of global `SetBaseFS`; `TokenService.Issue` returns `(string, error)` and `TTL()` supplies `expires_in`; password helpers are plain functions; Postgres image is `postgres:17-alpine`.
 
 ---
 
@@ -66,7 +66,7 @@ cd /Users/hoangvx/Go/go-backend-template
 go mod init github.com/Hhh22121/go-backend-template
 ```
 
-Expected: `go.mod` created with `go 1.27…`.
+Expected: `go.mod` created with a `go 1.2x` directive (recent Go may write the previous minor version — that's fine; later `go get` may raise it).
 
 - [ ] **Step 4: Write `.gitignore`**
 
@@ -737,7 +737,7 @@ type User struct {
 }
 ```
 
-If `CreatedAt` is `pgtype.Timestamptz` or `Email` is `pgtype.Text`, change the override `db_type` to `pg_catalog.timestamptz` / `pg_catalog.citext` respectively, regenerate, and recheck.
+If `CreatedAt` is `pgtype.Timestamptz` or `Email` is `pgtype.Text`, change the override `db_type` to `pg_catalog.timestamptz` / `public.citext` respectively, regenerate, and recheck.
 
 - [ ] **Step 8: Build**
 
@@ -883,7 +883,7 @@ func NewPool(ctx context.Context, url string) (*pgxpool.Pool, error) {
 // Migrate applies all pending embedded migrations.
 func Migrate(ctx context.Context, pool *pgxpool.Pool) error {
 	db := stdlib.OpenDBFromPool(pool) // closing db does not close pool
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	provider, err := goose.NewProvider(goose.DialectPostgres, db, migrations.FS)
 	if err != nil {
@@ -2366,7 +2366,7 @@ test-integration:
 	GIN_MODE=test go test -race -tags integration ./...
 
 lint:
-	docker run --rm -v $(CURDIR):/app -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) golangci-lint run
+	docker run --rm -v $(CURDIR):/app -v $(shell go env GOMODCACHE):/go/pkg/mod -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) golangci-lint run
 
 sqlc:
 	go tool sqlc generate
