@@ -25,7 +25,7 @@ one example module (`user`) that shows the pattern for adding new modules.
 | Tests          | `testing` + `httptest`; `testcontainers-go` for DB |
 | Lint           | golangci-lint                                      |
 | Dev env        | Docker Compose (Postgres), Makefile                |
-| Tool pinning   | sqlc, goose, golangci-lint via `tool` directives in go.mod |
+| Tool pinning   | sqlc, goose via `tool` directives in go.mod; golangci-lint pinned binary/Docker image in Makefile |
 
 Module path: `github.com/Hhh22121/go-backend-template`.
 
@@ -108,6 +108,8 @@ CREATE TABLE users (
 ```
 
 `updated_at` is set explicitly by any UPDATE query (no trigger).
+`migrations/embed.go` uses `//go:embed *.sql`; `Migrate` calls
+`goose.Up(db, ".")`. Migration files use `-- +goose Up` / `-- +goose Down`.
 
 `sqlc.yaml`: engine postgresql, `schema: migrations`, `queries: queries`,
 out `internal/store`, `sql_package: pgx/v5`, override `uuid` →
@@ -130,14 +132,15 @@ out `internal/store`, `sql_package: pgx/v5`, override `uuid` →
 `Service.Create(ctx, email, passwordHash)`, `GetByID`, `GetByEmail`.
 Repository wraps sqlc queries and maps `pgx.ErrNoRows` → `ErrNotFound`,
 unique violation (23505) → `ErrConflict`. The `password_hash` is never
-serialized.
+serialized. `/users/me` for a valid token whose user no longer exists → 401.
 
 ### apperr / httpx
 `apperr` defines sentinels `ErrNotFound`, `ErrConflict`, `ErrUnauthorized`,
 `ErrValidation` (domain packages import only this). `httpx.WriteError(c, err)`
 maps them to 404/409/401/400, Gin bind errors → 400, anything else → 500
 (logged, generic message). `httpx.SetUserID` / `httpx.UserID` store the
-authenticated `uuid.UUID` in the Gin context. Envelope:
+authenticated `uuid.UUID` in the Gin context; `UserID(c)` returns
+`(uuid.UUID, bool)` — handlers treat `false` as 401. Envelope:
 `{"error":{"code":"not_found","message":"..."}}`.
 
 ## Error handling
