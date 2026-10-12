@@ -22,7 +22,7 @@
 
 | File | Responsibility |
 |------|----------------|
-| `go.mod` | module `github.com/Hhh22121/go-backend-template`, `tool` directives for sqlc + goose |
+| `go.mod` | module `go-backend-template`, `tool` directives for sqlc + goose |
 | `cmd/api/main.go` | load config, logger, pool, migrate, build modules, run server |
 | `internal/apperr/apperr.go` | sentinel errors |
 | `internal/httpx/errors.go` | `WriteError`, JSON envelope, `RequestIDKey` |
@@ -63,7 +63,7 @@ If it still prints `/usr/local/go/bin/go` (1.21.1), the old official install is 
 
 ```bash
 cd /Users/hoangvx/Go/go-backend-template
-go mod init github.com/Hhh22121/go-backend-template
+go mod init go-backend-template
 ```
 
 Expected: `go.mod` created with a `go 1.2x` directive (recent Go may write the previous minor version — that's fine; later `go get` may raise it).
@@ -231,9 +231,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/httpx"
-	"github.com/Hhh22121/go-backend-template/internal/httpx/httpxtest"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/httpx"
+	"go-backend-template/internal/httpx/httpxtest"
 )
 
 func TestWriteError(t *testing.T) {
@@ -325,7 +325,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 // RequestIDKey is the Gin context key holding the request ID.
@@ -424,7 +424,7 @@ func UserID(c *gin.Context) (uuid.UUID, bool) {
 - [ ] **Step 9: Run tests to verify they pass**
 
 Run: `go mod tidy && GIN_MODE=test go test ./internal/...`
-Expected: `ok  github.com/Hhh22121/go-backend-template/internal/httpx`
+Expected: `ok  go-backend-template/internal/httpx`
 
 - [ ] **Step 10: Commit**
 
@@ -779,7 +779,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 
-	"github.com/Hhh22121/go-backend-template/internal/database"
+	"go-backend-template/internal/database"
 )
 
 // NewPostgres starts a throwaway Postgres container, runs migrations and
@@ -827,8 +827,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Hhh22121/go-backend-template/internal/database"
-	"github.com/Hhh22121/go-backend-template/internal/testutil"
+	"go-backend-template/internal/database"
+	"go-backend-template/internal/testutil"
 )
 
 func TestMigrateIsIdempotent(t *testing.T) {
@@ -864,7 +864,7 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
-	"github.com/Hhh22121/go-backend-template/migrations"
+	"go-backend-template/migrations"
 )
 
 // NewPool connects to Postgres and verifies the connection with a ping.
@@ -956,8 +956,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/store"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/store"
 )
 
 // Repository persists users. Implementations return apperr.ErrNotFound and
@@ -1039,8 +1039,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/user"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/user"
 )
 
 type MemoryRepository struct {
@@ -1107,9 +1107,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/user"
-	"github.com/Hhh22121/go-backend-template/internal/user/usertest"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/user"
+	"go-backend-template/internal/user/usertest"
 )
 
 func TestServiceCreateNormalizesEmail(t *testing.T) {
@@ -1209,10 +1209,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/httpx"
-	"github.com/Hhh22121/go-backend-template/internal/httpx/httpxtest"
-	"github.com/Hhh22121/go-backend-template/internal/user"
-	"github.com/Hhh22121/go-backend-template/internal/user/usertest"
+	"go-backend-template/internal/httpx"
+	"go-backend-template/internal/httpx/httpxtest"
+	"go-backend-template/internal/user"
+	"go-backend-template/internal/user/usertest"
 )
 
 func newRouter(svc *user.Service, mw gin.HandlerFunc) *gin.Engine {
@@ -1281,8 +1281,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/httpx"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/httpx"
 )
 
 type handler struct {
@@ -1336,9 +1336,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/testutil"
-	"github.com/Hhh22121/go-backend-template/internal/user"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/testutil"
+	"go-backend-template/internal/user"
 )
 
 func TestPostgresRepository(t *testing.T) {
@@ -1409,7 +1409,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 func TestPasswordRoundTrip(t *testing.T) {
@@ -1448,7 +1448,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 var secret = strings.Repeat("k", 32)
@@ -1524,7 +1524,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 const maxPasswordBytes = 72 // bcrypt limit
@@ -1561,7 +1561,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 // TokenService issues and verifies HS256 access tokens.
@@ -1647,10 +1647,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/auth"
-	"github.com/Hhh22121/go-backend-template/internal/httpx/httpxtest"
-	"github.com/Hhh22121/go-backend-template/internal/user"
-	"github.com/Hhh22121/go-backend-template/internal/user/usertest"
+	"go-backend-template/internal/auth"
+	"go-backend-template/internal/httpx/httpxtest"
+	"go-backend-template/internal/user"
+	"go-backend-template/internal/user/usertest"
 )
 
 type env struct {
@@ -1789,8 +1789,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/httpx"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/httpx"
 )
 
 // RequireAuth rejects requests without a valid bearer token and stores the
@@ -1825,9 +1825,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/httpx"
-	"github.com/Hhh22121/go-backend-template/internal/user"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/httpx"
+	"go-backend-template/internal/user"
 )
 
 var errInvalidCredentials = fmt.Errorf("%w: invalid credentials", apperr.ErrUnauthorized)
@@ -1949,8 +1949,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/httpx/httpxtest"
-	"github.com/Hhh22121/go-backend-template/internal/server"
+	"go-backend-template/internal/httpx/httpxtest"
+	"go-backend-template/internal/server"
 )
 
 type pinger struct{ err error }
@@ -2065,7 +2065,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/httpx"
+	"go-backend-template/internal/httpx"
 )
 
 const requestIDHeader = "X-Request-ID"
@@ -2227,11 +2227,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/auth"
-	"github.com/Hhh22121/go-backend-template/internal/config"
-	"github.com/Hhh22121/go-backend-template/internal/database"
-	"github.com/Hhh22121/go-backend-template/internal/server"
-	"github.com/Hhh22121/go-backend-template/internal/user"
+	"go-backend-template/internal/auth"
+	"go-backend-template/internal/config"
+	"go-backend-template/internal/database"
+	"go-backend-template/internal/server"
+	"go-backend-template/internal/user"
 )
 
 func main() {

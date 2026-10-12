@@ -27,7 +27,7 @@ one example module (`user`) that shows the pattern for adding new modules.
 | Dev env        | Docker Compose (Postgres), Makefile                |
 | Tool pinning   | sqlc, goose via `tool` directives in go.mod; golangci-lint pinned binary/Docker image in Makefile |
 
-Module path: `github.com/Hhh22121/go-backend-template`.
+Module path: `go-backend-template`.
 
 ## Layout (feature/module-based)
 

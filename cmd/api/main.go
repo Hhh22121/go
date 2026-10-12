@@ -9,11 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/auth"
-	"github.com/Hhh22121/go-backend-template/internal/config"
-	"github.com/Hhh22121/go-backend-template/internal/database"
-	"github.com/Hhh22121/go-backend-template/internal/server"
-	"github.com/Hhh22121/go-backend-template/internal/user"
+	"go-backend-template/internal/auth"
+	"go-backend-template/internal/config"
+	"go-backend-template/internal/database"
+	"go-backend-template/internal/server"
+	"go-backend-template/internal/user"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 const maxPasswordBytes = 72 // bcrypt limit

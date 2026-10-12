@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Hhh22121/go-backend-template/internal/database"
-	"github.com/Hhh22121/go-backend-template/internal/testutil"
+	"go-backend-template/internal/database"
+	"go-backend-template/internal/testutil"
 )
 
 func TestMigrateIsIdempotent(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 // RequestIDKey is the Gin context key holding the request ID.

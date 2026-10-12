@@ -10,7 +10,7 @@ import (
 	"github.com/pressly/goose/v3"
 	"github.com/pressly/goose/v3/lock"
 
-	"github.com/Hhh22121/go-backend-template/migrations"
+	"go-backend-template/migrations"
 )
 
 // NewPool connects to Postgres and verifies the connection with a ping.

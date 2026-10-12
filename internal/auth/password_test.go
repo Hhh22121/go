@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 func TestPasswordRoundTrip(t *testing.T) {

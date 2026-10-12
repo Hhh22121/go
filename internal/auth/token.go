@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
+	"go-backend-template/internal/apperr"
 )
 
 // TokenService issues and verifies HS256 access tokens.

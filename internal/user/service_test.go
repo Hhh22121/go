@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/user"
-	"github.com/Hhh22121/go-backend-template/internal/user/usertest"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/user"
+	"go-backend-template/internal/user/usertest"
 )
 
 func TestServiceCreateNormalizesEmail(t *testing.T) {

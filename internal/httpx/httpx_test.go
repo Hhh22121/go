@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/Hhh22121/go-backend-template/internal/apperr"
-	"github.com/Hhh22121/go-backend-template/internal/httpx"
-	"github.com/Hhh22121/go-backend-template/internal/httpx/httpxtest"
+	"go-backend-template/internal/apperr"
+	"go-backend-template/internal/httpx"
+	"go-backend-template/internal/httpx/httpxtest"
 )
 
 func TestWriteError(t *testing.T) {
